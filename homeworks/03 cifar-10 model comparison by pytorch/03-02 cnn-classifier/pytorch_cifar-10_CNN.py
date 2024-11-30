@@ -16,9 +16,14 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------超参数定义--------- #
-total_epoch = 100  # 训练的总世代数
+total_epoch = 3  # 训练的总世代数
 learning_rate = 0.01  # 学习率
 batch_size = 64  # 批处理大小
+# 当前model_name的可选参数有：
+# - 'LeNet'
+# - 'MLeNet'
+# - 'ELeNet'
+model_name = 'MLeNet'
 # ---------超参数定义--------- #
 
 
@@ -32,10 +37,20 @@ transform = transforms.Compose([
 ])
 
 # 2. 模型搭建：定义卷积神经网络模型
-from CNNs.LeNet import LeNet
+# LeNet
+# from CNNs.LeNet import LeNet
+# # 初始化模型
+# model = LeNet().to(device)
 
+# MLeNet
+from CNNs.MLeNet import MLeNet
 # 初始化模型
-model = LeNet().to(device)
+model = MLeNet().to(device)
+
+# ELeNet
+# from CNNs.ELeNet import ELeNet
+# # 初始化模型
+# model = ELeNet().to(device)
 
 # 3. 构建损失函数和优化器
 criterion = nn.CrossEntropyLoss()  # 交叉熵损失
@@ -134,7 +149,7 @@ if __name__ == '__main__':
     # 2. 训练和测试模型，并保存模型
 
     # 创建模型保存目录
-    model_dir = './model'
+    model_dir = f'./model/{model_name}'
     os.makedirs(model_dir, exist_ok=True)
 
     # 训练和测试模型
@@ -143,7 +158,7 @@ if __name__ == '__main__':
     # 获取当前时间并格式化为字符串
     current_time = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
     # 创建结果目录
-    results_dir = f"./results/{current_time}"
+    results_dir = f"./results/{model_name}/{current_time}"
     os.makedirs(results_dir, exist_ok=True)
     # 保存模型
     model_path = os.path.join(model_dir, f"model_{current_time}.pth")
@@ -159,7 +174,7 @@ if __name__ == '__main__':
     disp.plot(cmap=plt.cm.Blues)
     plt.title('Confusion Matrix')
     # 保存混淆矩阵图像
-    plt.savefig(os.path.join(f'./results/{current_time}', f'confusion_matrix_{current_time}.png'))
+    plt.savefig(os.path.join(f'./results/{model_name}/{current_time}', f'confusion_matrix_{current_time}.png'))
     plt.show()
 
     # 3. 绘制训练集准确率随epoch变化的曲线图
@@ -168,7 +183,7 @@ if __name__ == '__main__':
     plt.ylabel('Accuracy (%)')
     plt.title('Training Accuracy over Epochs')
     plt.grid(True)
-    plt.savefig(os.path.join(f'./results/{current_time}', f'training_accuracy_{current_time}.png'))
+    plt.savefig(os.path.join(f'./results/{model_name}/{current_time}', f'training_accuracy_{current_time}.png'))
     plt.show()
 
     # 4. 绘制损失曲线
@@ -179,11 +194,11 @@ if __name__ == '__main__':
     plt.ylabel('Loss')
     plt.legend()
     plt.grid(True)
-    plt.savefig(os.path.join(f'./results/{current_time}', f'training_loss_{current_time}.png'))
+    plt.savefig(os.path.join(f'./results/{model_name}/{current_time}', f'training_loss_{current_time}.png'))
     plt.show()
 
     # 5. 保存训练结果(训练损失和训练准确率)到CSV文件
     df = pd.DataFrame(training_results, columns=["Epoch", "Loss", "Accuracy"])
-    csv_file_path = os.path.join(f'./results/{current_time}', f"training_results_{current_time}.csv")
+    csv_file_path = os.path.join(f'./results/{model_name}/{current_time}', f"training_results_{current_time}.csv")
     df.to_csv(csv_file_path, index=False)
     print(f"Training results saved to {csv_file_path}")

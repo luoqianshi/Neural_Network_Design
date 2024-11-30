@@ -16,10 +16,9 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------超参数定义--------- #
-total_epoch = 100  # 训练的总世代数
+total_epoch = 5  # 训练的总世代数
 learning_rate = 0.01  # 学习率
 batch_size = 64  # 批处理大小
-hidden_layer_sizes = (128, 64)  # MLP模型隐藏层的网络形状
 # ---------超参数定义--------- #
 
 
@@ -33,20 +32,7 @@ transform = transforms.Compose([
 ])
 
 # 2. 模型搭建：定义多层感知机模型
-class MLP(nn.Module):  # 2 usages
-    def __init__(self):
-        super(MLP, self).__init__()
-        self.hidden1 = nn.Linear(32 * 32 * 3, out_features=hidden_layer_sizes[0])  # 输入层 -> 第一隐藏层
-        self.hidden2 = nn.Linear(in_features=hidden_layer_sizes[0], out_features=hidden_layer_sizes[1])  # 第一隐藏层 -> 第二隐藏层
-        self.output = nn.Linear(in_features=hidden_layer_sizes[1], out_features=10)  # 第二隐藏层 -> 输出层
-
-    def forward(self, x):
-        x = x.view(-1, 32 * 32 * 3)  # 展平输入
-        x = torch.relu(self.hidden1(x))
-        x = torch.relu(self.hidden2(x))
-        x = self.output(x)
-        return x
-
+from MLPs.MLP import MLP
 
 # 初始化模型
 model = MLP().to(device)

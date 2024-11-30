@@ -3,8 +3,8 @@
 @Date: 2024-11-30
 @Description:
 - 该网络迁移自用于Mnist的LeNet结构
-- 参数规模：61,706
-- FLOPS：10,358,400
+- 预估的总参数量为： 52202.0
+- 预估的总FLOPs为： 642000.0
 '''
 
 import torch

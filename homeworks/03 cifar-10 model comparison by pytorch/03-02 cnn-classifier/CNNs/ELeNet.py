@@ -3,8 +3,8 @@
 @Date: 2024-11-30
 @Description:
 - 该网络迁移自https://blog.csdn.net/qq_40371333/article/details/142586264
-- 参数规模：546,602
-- FLOPS：10,358,400
+- 预估的总参数量为： 617754.0
+- 预估的总FLOPs为： 1180648.0
 '''
 
 import torch

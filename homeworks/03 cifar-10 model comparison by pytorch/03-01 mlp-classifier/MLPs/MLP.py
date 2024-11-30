@@ -1,6 +1,11 @@
 import torch
 import torch.nn as nn
 
+'''
+MLP
+预估的总参数量为： 402250.0
+预估的总FLOPs为： 402048.0
+'''
 
 class MLP(nn.Module):  # 2 usages
     def __init__(self):

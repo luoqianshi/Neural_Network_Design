@@ -16,13 +16,14 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------超参数定义--------- #
-total_epoch = 3  # 训练的总世代数
+total_epoch = 100  # 训练的总世代数
 learning_rate = 0.01  # 学习率
 batch_size = 64  # 批处理大小
 # 当前model_name的可选参数有：
 # - 'LeNet'
 # - 'MLeNet'
 # - 'ELeNet'
+# - 'MLeNet_Dropout'
 model_name = 'MLeNet'
 # ---------超参数定义--------- #
 
@@ -37,24 +38,35 @@ transform = transforms.Compose([
 ])
 
 # 2. 模型搭建：定义卷积神经网络模型
-# LeNet
-# from CNNs.LeNet import LeNet
-# # 初始化模型
-# model = LeNet().to(device)
-
-# MLeNet
+from CNNs.LeNet import LeNet
 from CNNs.MLeNet import MLeNet
-# 初始化模型
-model = MLeNet().to(device)
+from CNNs.ELeNet import ELeNet
+from CNNs.MLeNet_Dropout import MLeNet_Dropout
 
-# ELeNet
-# from CNNs.ELeNet import ELeNet
-# # 初始化模型
-# model = ELeNet().to(device)
+# 初始化模型
+if model_name == 'LeNet':
+    # LeNet
+    print('你现在所选择的网络模型为：LeNet')
+    model = LeNet().to(device)
+elif model_name == 'MLeNet':
+    # MLeNet
+    print('你现在所选择的网络模型为：MLeNet')
+    model = MLeNet().to(device)
+elif model_name == 'ELeNet':
+    # ELeNet
+    print('你现在所选择的网络模型为：ELeNet')
+    model = ELeNet().to(device)
+elif model_name == 'MLeNet_Dropout':
+    # MLeNet_Dropout
+    print('你现在所选择的网络模型为：MLeNet_Dropout')
+    model = MLeNet_Dropout().to(device)
 
 # 3. 构建损失函数和优化器
 criterion = nn.CrossEntropyLoss()  # 交叉熵损失
-optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+# optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+# L2正则化
+weight_decay = 0.01  # L2 正则化的权重衰减系数
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
 # 记录每个epoch的损失值
 loss_list = []

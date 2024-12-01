@@ -16,7 +16,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------超参数定义--------- #
-total_epoch = 5  # 训练的总世代数
+total_epoch = 100  # 训练的总世代数
 learning_rate = 0.01  # 学习率
 batch_size = 64  # 批处理大小
 # ---------超参数定义--------- #

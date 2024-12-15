@@ -11,28 +11,42 @@ import time
 from datetime import datetime
 from tqdm import tqdm
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from torchvision.transforms.functional import InterpolationMode
 
 # 检查GPU是否可用
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ---------超参数定义--------- #
-total_epoch = 100  # 训练的总世代数
+total_epoch = 80  # 训练的总世代数
 learning_rate = 0.01  # 学习率
-batch_size = 64  # 批处理大小
+batch_size = 128  # 批处理大小
 # 当前model_name的可选参数有：
-# - 'LeNet'
-# - 'MLeNet'
-# - 'ELeNet'
-# - 'MLeNet_Dropout'
-# - 'MLeNet_Dropout_BN'
-model_name = 'MLeNet'
+model_name_list = ['LeNet', 'MLeNet', 'ELeNet',
+                   'MLeNet_Dropout', 'MLeNet_Dropout_BN', 'OLeNet',
+                   'AlexNet', 'thinAlexNet',
+                   'thinVGG11', 'thinVGG9', 'condenseVGG9',
+                   'ResNet32', 'ResNet101']
+# 【重要】请在此处进行模型选择
+model_name = model_name_list[7]
+# 【重要】训练之前想想这次要不要放大尺寸！！
+# 【重要】训练之前想象这次要不要使用L2正则化
+useL2 = False
+weight_decay = 0.01  # L2 正则化的权重衰减系数
 # ---------超参数定义--------- #
+
+# ---------超参数输出--------- #
+print(f'本次采用的学习率是{learning_rate}')
+# ---------超参数输出--------- #
 
 
 # 1. 数据准备：加载CIFAR-10数据集
 # 对数据集进行一些处理，数据格式转换、归一化
 # 图像尺寸为 32x32，且有 3 个通道（RGB）
 transform = transforms.Compose([
+    # 将图像大小调整为 224x224
+    # 这里是为了适应AlexNet \ VGG \ ResNet网络的输入尺寸【这不是一个好主意】
+    # BICUBIC插值是一种插值方法，它能够生成更平滑的图像，减少锯齿状边缘的出现。
+    # transforms.Resize((224, 224), interpolation=InterpolationMode.BICUBIC),
     transforms.ToTensor(),
     # CIFAR-10 的图像是彩色的，因此在归一化时需要为每个通道指定均值和标准差。
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # 归一化
@@ -44,6 +58,15 @@ from CNNs.MLeNet import MLeNet
 from CNNs.ELeNet import ELeNet
 from CNNs.MLeNet_Dropout import MLeNet_Dropout
 from CNNs.MLeNet_Dropout_BN import MLeNet_Dropout_BN
+from CNNs.AlexNet import AlexNet
+from CNNs.OLeNet import OLeNet
+from CNNs.thinAlexNet import thinAlexNet
+from CNNs.thinVGG11 import thinVGG11
+from CNNs.ResNet import ResNet32
+from CNNs.thinVGG9 import thinVGG9
+from CNNs.condenseVGG9 import condenseVGG9
+
+# print(model_name)
 
 # 初始化模型
 if model_name == 'LeNet':
@@ -66,13 +89,46 @@ elif model_name == 'MLeNet_Dropout_BN':
     # MLeNet_Dropout_BN
     print('你现在所选择的网络模型为：MLeNet_Dropout')
     model = MLeNet_Dropout_BN().to(device)
+elif model_name == 'AlexNet':
+    # AlexNet
+    print('你现在所选择的网络模型为：AlexNet')
+    model = AlexNet().to(device)
+elif model_name == 'thinAlexNet':
+    # thinAlexNet
+    print('你现在所选择的网络模型为：thinAlexNet')
+    model = thinAlexNet().to(device)
+elif model_name == 'OLeNet':
+    # OLeNet
+    print('你现在所选择的网络模型为：OLeNet')
+    model = OLeNet().to(device)
+elif model_name == 'thinVGG11':
+    # thinVGG11
+    print('你现在所选择的网络模型为：thinVGG11')
+    model = thinVGG11().to(device)
+elif model_name == 'thinVGG9':
+    # thinVGG9
+    print('你现在所选择的网络模型为：thinVGG9')
+    model = thinVGG9().to(device)
+elif model_name == 'condenseVGG9':
+    # condenseVGG9
+    print('你现在所选择的网络模型为：condenseVGG9')
+    model = condenseVGG9().to(device)
+elif model_name == 'ResNet32':
+    # ResNet32
+    print('你现在所选择的网络模型为：ResNet32')
+    model = ResNet32().to(device)
 
 # 3. 构建损失函数和优化器
 criterion = nn.CrossEntropyLoss()  # 交叉熵损失
-# optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-# L2正则化
-weight_decay = 0.01  # L2 正则化的权重衰减系数
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+if useL2:
+    print(f'本次训练使用了L2正则化方法，权重衰减系数为{weight_decay}')
+    # L2正则化
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+else:
+    # 不使用任何的正则化衰减
+    print(f'本次训练不使用正则化衰减')
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+
 
 # 记录每个epoch的损失值
 loss_list = []
@@ -158,10 +214,10 @@ def test(model, testloader):  # 1 usage
 
 if __name__ == '__main__':
     # 1. 数据集加载并按照batch_size对数据进行批处理
-    train_set = torchvision.datasets.CIFAR10(root='.././data', train=True, download=True, transform=transform)
+    train_set = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True)
 
-    test_set = torchvision.datasets.CIFAR10(root='.././data', train=False, download=True, transform=transform)
+    test_set = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     # 2. 训练和测试模型，并保存模型
